@@ -1,13 +1,31 @@
+using Microsoft.EntityFrameworkCore;
+using MyBookStore.Data;
+
 namespace MyBookStore
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+			var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddControllersWithViews();
+			builder.Services.AddDbContext<MyBookStoreContext>(options =>
+			{
+				options.UseMySql(
+					builder
+						.Configuration
+						.GetConnectionString("MyBookStoreContext"),
+					ServerVersion
+						.AutoDetect(
+							builder
+								.Configuration
+								.GetConnectionString("MyBookStoreContext")
+						)
+				);
+			});
+
+			// Add services to the container.
+			builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
