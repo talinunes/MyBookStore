@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MyBookStore.Data;
+using MyBookStore.Services;
 
 namespace MyBookStore
 {
@@ -23,6 +24,8 @@ namespace MyBookStore
 						)
 				);
 			});
+
+            builder.Services.AddScoped<GenreService>();
 
 			// Add services to the container.
 			builder.Services.AddControllersWithViews();
