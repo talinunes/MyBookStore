@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyBookStore.Data;
 using MyBookStore.Models;
+using MyBookStore.Models.ViewModels;
 using MyBookStore.Services;
+using MyBookStore.Services.Exceptions;
+using System.Diagnostics;
 
 namespace MyBookStore.Controllers
 {
@@ -14,9 +17,9 @@ namespace MyBookStore.Controllers
 			_service = service;
 		}
 
-		public IActionResult Index()
+		public async Task<IActionResult> Index()
         {
-            return View(_service.FindAll());
+            return View(await _service.FindAllAsync());
         }
 
         public IActionResult Create()
@@ -26,15 +29,59 @@ namespace MyBookStore.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]    
-        public IActionResult Create(Genre genre)
+        public async Task<IActionResult> Create(Genre genre)
         {
             if (!ModelState.IsValid) 
             {
                 return View();
             }
 
+           await _service.InsertAsync(genre);
+
 
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction(nameof(Error), new {Message = "O id não foi fornecido."});
+
+            }
+
+            Genre genre = await _service.FindByIdAsync(id.Value);
+            if (genre is null) 
+            {
+				return RedirectToAction(nameof(Error), new { Message = "O id não foi encontrado." });
+			}
+
+            return View(genre);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                await _service.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException ex) 
+            {
+                return RedirectToAction(nameof(Error), new {message = ex.Message});
+            }
+		}
+
+        public IActionResult Error(string message) 
+        {
+            var viewModel = new ErrorViewModel
+            {
+                Message = message,
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+            return View(viewModel);
         }
     }
 }
