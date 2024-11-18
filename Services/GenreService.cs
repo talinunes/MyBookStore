@@ -2,6 +2,7 @@
 using MyBookStore.Data;
 using MyBookStore.Models;
 using MyBookStore.Services.Exceptions;
+using System.Data;
 
 namespace MyBookStore.Services
 {
@@ -40,6 +41,28 @@ namespace MyBookStore.Services
 			catch (DbUpdateException ex) 
 			{
 				throw new IntegrityException(ex.Message);
+			}
+		}
+
+
+		public async Task UpdateAsync(Genre genre)
+		{
+			bool hasAny = await _context.Genre.AnyAsync(x => x.Id == genre.Id);
+
+			if (!hasAny)
+			{
+				throw new NotFoundException("Id não encontrado");
+			}
+
+			try
+			{
+				_context.Update(genre);
+				await _context.SaveChangesAsync();
+			}
+
+			catch (DbUpdateConcurrencyException ex)
+			{
+				throw new DbConcurrencyException(ex.Message);
 			}
 		}
 	}

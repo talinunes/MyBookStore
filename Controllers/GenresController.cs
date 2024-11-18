@@ -83,5 +83,47 @@ namespace MyBookStore.Controllers
             };
             return View(viewModel);
         }
+
+
+        public async Task<ActionResult> Edit(int? id) 
+        {
+            if (id is null) 
+            {
+                return RedirectToAction(nameof(Error), new { message = "Id não fornecido" });
+            }
+
+            var obj = await _service.FindByIdAsync(id.Value);
+            if (obj is null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "Id não encontrado"});
+            }
+            return View(obj);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit (int id, Genre genre)
+        {
+            if (!ModelState.IsValid) 
+            {
+                return View();
+            }
+
+            if (id != genre.Id) 
+            {
+            return RedirectToAction(nameof(Error), new { message = "Id's Não condizentes"});
+            }
+
+            try
+            {
+                await _service.UpdateAsync(genre);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ApplicationException ex) 
+            {
+                return RedirectToAction(nameof(Error), new { message = ex.Message});
+            }
+        }
     }
+
 }
