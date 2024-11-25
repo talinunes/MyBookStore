@@ -12,12 +12,12 @@ namespace MyBookStore.Controllers
     {
         private readonly GenreService _service;
 
-		public GenresController(GenreService service)
-		{
-			_service = service;
-		}
+        public GenresController(GenreService service)
+        {
+            _service = service;
+        }
 
-		public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index()
         {
             return View(await _service.FindAllAsync());
         }
@@ -28,15 +28,15 @@ namespace MyBookStore.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]    
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Genre genre)
         {
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
             {
                 return View();
             }
 
-           await _service.InsertAsync(genre);
+            await _service.InsertAsync(genre);
 
 
             return RedirectToAction(nameof(Index));
@@ -46,15 +46,15 @@ namespace MyBookStore.Controllers
         {
             if (id is null)
             {
-                return RedirectToAction(nameof(Error), new {Message = "O id não foi fornecido."});
+                return RedirectToAction(nameof(Error), new { Message = "O id não foi fornecido." });
 
             }
 
             Genre genre = await _service.FindByIdAsync(id.Value);
-            if (genre is null) 
+            if (genre is null)
             {
-				return RedirectToAction(nameof(Error), new { Message = "O id não foi encontrado." });
-			}
+                return RedirectToAction(nameof(Error), new { Message = "O id não foi encontrado." });
+            }
 
             return View(genre);
         }
@@ -68,13 +68,27 @@ namespace MyBookStore.Controllers
                 await _service.RemoveAsync(id);
                 return RedirectToAction(nameof(Index));
             }
-            catch (IntegrityException ex) 
+            catch (IntegrityException ex)
             {
-                return RedirectToAction(nameof(Error), new {message = ex.Message});
+                return RedirectToAction(nameof(Error), new { message = ex.Message });
             }
-		}
+        }
 
-        public IActionResult Error(string message) 
+        public async Task<ActionResult> Details(int? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "Id não fornecido" });
+            }
+
+            var obj = await _service.FindByIdEagerAsync(id.Value);
+            if (obj is null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "Id não encontrado" });
+            }
+            return View(obj);
+        }
+        public IActionResult Error(string message)
         {
             var viewModel = new ErrorViewModel
             {
@@ -85,9 +99,9 @@ namespace MyBookStore.Controllers
         }
 
 
-        public async Task<ActionResult> Edit(int? id) 
+        public async Task<ActionResult> Edit(int? id)
         {
-            if (id is null) 
+            if (id is null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id não fornecido" });
             }
@@ -95,23 +109,23 @@ namespace MyBookStore.Controllers
             var obj = await _service.FindByIdAsync(id.Value);
             if (obj is null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id não encontrado"});
+                return RedirectToAction(nameof(Error), new { message = "Id não encontrado" });
             }
             return View(obj);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit (int id, Genre genre)
+        public async Task<IActionResult> Edit(int id, Genre genre)
         {
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
             {
                 return View();
             }
 
-            if (id != genre.Id) 
+            if (id != genre.Id)
             {
-            return RedirectToAction(nameof(Error), new { message = "Id's Não condizentes"});
+                return RedirectToAction(nameof(Error), new { message = "Id's Não condizentes" });
             }
 
             try
@@ -119,9 +133,9 @@ namespace MyBookStore.Controllers
                 await _service.UpdateAsync(genre);
                 return RedirectToAction(nameof(Index));
             }
-            catch (ApplicationException ex) 
+            catch (ApplicationException ex)
             {
-                return RedirectToAction(nameof(Error), new { message = ex.Message});
+                return RedirectToAction(nameof(Error), new { message = ex.Message });
             }
         }
     }
