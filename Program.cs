@@ -27,6 +27,7 @@ namespace MyBookStore
 
             builder.Services.AddScoped<GenreService>();
             builder.Services.AddScoped<SeedingService>();
+            builder.Services.AddScoped<BookService>();
 
             builder.Services.AddControllersWithViews();
 
